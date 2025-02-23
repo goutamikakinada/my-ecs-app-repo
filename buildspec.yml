@@ -9,24 +9,24 @@ env:
 phases:
   pre_build:
     commands:
-      - echo Logging into Amazon ECR...
+      - echo "Logging into Amazon ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-      - export IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)  # Use short commit SHA
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)  # Use short commit SHA
       - echo "Using IMAGE_TAG: $IMAGE_TAG"
 
   build:
     commands:
-      - echo Building the Docker image...
+      - echo "Building the Docker image..."
       - docker build -t $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG -t $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest .
 
   post_build:
     commands:
-      - echo Pushing Docker images to Amazon ECR...
+      - echo "Pushing Docker images to Amazon ECR..."
       - docker push $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
       - docker push $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
-      - echo Writing image definitions file...
-      - printf '[{"name":"my-ecs-container","imageUri":"%s.dkr.ecr.%s.amazonaws.com/%s:%s"}]' "$ACCOUNT_ID" "$AWS_REGION" "$ECR_REPOSITORY" "$IMAGE_TAG" > imagedefinitions.json
-      - echo Uploading imagedefinitions.json to S3...
+      - echo "Writing image definitions file..."
+      - printf '[{"name":"my-ecs-container","imageUri":"%s.dkr.ecr.%s.amazonaws.com/%s:%s"}]\n' "$ACCOUNT_ID" "$AWS_REGION" "$ECR_REPOSITORY" "$IMAGE_TAG" > imagedefinitions.json
+      - echo "Uploading imagedefinitions.json to S3..."
       - aws s3 cp imagedefinitions.json s3://my-ecs-app-s3/imagedefinitions.json
 
 artifacts:
