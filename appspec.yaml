@@ -1,10 +1,10 @@
+---
 version: 0.0
 Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        TaskDefinition: {"Ref": "TaskDefinition"}
+        TaskDefinition: "PLACEHOLDER"  # CodeDeploy replaces this dynamically
         LoadBalancerInfo:
           ContainerName: "my-ecs-app-container"
           ContainerPort: 3000
-
