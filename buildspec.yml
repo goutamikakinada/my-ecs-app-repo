@@ -2,16 +2,16 @@ version: 0.2
 
 env:
   variables:
-    AWS_REGION: "ap-south-1"  # Change this if your region is different
+    AWS_REGION: "ap-south-1"  # Change this if needed
     ECR_REPOSITORY: "my-ecs-app-repo"
-    ACCOUNT_ID: "202533504513"  # Your AWS account ID
+    ACCOUNT_ID: "202533504513"  # Your AWS Account ID
 
 phases:
   pre_build:
     commands:
       - echo "Logging into Amazon ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)  # Use short commit SHA
+      - export IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)  # Use short commit SHA
       - echo "Using IMAGE_TAG: $IMAGE_TAG"
 
   build:
