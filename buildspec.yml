@@ -2,33 +2,30 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: "my-ecs-app-repo"  # Replace with your actual ECR repository name
-    AWS_REGION: "ap-south-1"            # Change this if using a different region
+    AWS_REGION: "ap-south-1"  # Change this if your region is different
+    ECR_REPOSITORY: "my-ecs-app-repo"
 
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 202533504513.dkr.ecr.$AWS_REGION.amazonaws.com
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - echo IMAGE_TAG=$IMAGE_TAG
+      - echo Logging into Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 123456789012.dkr.ecr.$AWS_REGION.amazonaws.com
 
   build:
     commands:
       - echo Building the Docker image...
-      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG 202533504513.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - docker build -t 123456789012.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest -t 123456789012.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION .
 
   post_build:
     commands:
-      - echo Pushing the Docker image to ECR...
-      - docker push 202533504513.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - echo Pushing Docker image to Amazon ECR...
+      - docker push 123456789012.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY --all-tags
       - echo Writing image definitions file...
-      - printf '[{"name":"my-ecs-app-container","imageUri":"%s.dkr.ecr.%s.amazonaws.com/%s:%s"}]' 202533504513 $AWS_REGION $IMAGE_REPO_NAME $IMAGE_TAG > imagedefinitions.json
+      - printf '[{"name":"my-ecs-container","imageUri":"123456789012.dkr.ecr.%s.amazonaws.com/%s:latest"}]' $AWS_REGION $ECR_REPOSITORY > imagedefinitions.json
+      - echo Uploading imagedefinitions.json to S3...
+      - aws s3 cp imagedefinitions.json s3://my-ecs-app-s3/imagedefinitions.json
 
 artifacts:
   files:
-    - appspec.yml
     - imagedefinitions.json
-  discard-paths: yes
 
