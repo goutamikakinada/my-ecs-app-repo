@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: "my-ecs-app"
+    IMAGE_REPO_NAME: "my-ecs-app-repo"
     AWS_REGION: "ap-south-1"
     AWS_ACCOUNT_ID: "202533504513"
     S3_BUCKET: "my-ecs-app-s3"
@@ -21,6 +21,7 @@ phases:
       - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
+      - docker tag my-ecs-app-container:latest $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/$IMAGE_REPO_NAME:latest  # Additional tag allocation
 
   post_build:
     commands:
