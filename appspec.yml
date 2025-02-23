@@ -3,7 +3,8 @@ Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        TaskDefinition: "my-ecs-app-td"
+        TaskDefinition: {"Ref": "TaskDefinition"}
         LoadBalancerInfo:
           ContainerName: "my-ecs-app-container"
           ContainerPort: 3000
+

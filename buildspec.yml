@@ -2,8 +2,8 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: "my-ecs-app-repo"
-    AWS_REGION: "ap-south-1"
+    IMAGE_REPO_NAME: "my-ecs-app-repo"  # Replace with your actual ECR repository name
+    AWS_REGION: "ap-south-1"            # Change this if using a different region
 
 phases:
   pre_build:
@@ -11,6 +11,7 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 202533504513.dkr.ecr.$AWS_REGION.amazonaws.com
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo IMAGE_TAG=$IMAGE_TAG
 
   build:
     commands:
@@ -22,11 +23,12 @@ phases:
     commands:
       - echo Pushing the Docker image to ECR...
       - docker push 202533504513.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - echo Creating imagedefinitions.json...
-      - printf '[{"name":"my-ecs-app-container","imageUri":"202533504513.dkr.ecr.%s.amazonaws.com/my-ecs-app:%s"}]' $AWS_REGION $IMAGE_TAG > imagedefinitions.json
+      - echo Writing image definitions file...
+      - printf '[{"name":"my-ecs-app-container","imageUri":"%s.dkr.ecr.%s.amazonaws.com/%s:%s"}]' 202533504513 $AWS_REGION $IMAGE_REPO_NAME $IMAGE_TAG > imagedefinitions.json
 
 artifacts:
   files:
     - appspec.yml
     - imagedefinitions.json
   discard-paths: yes
+
