@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: "my-ecs-app"
+    IMAGE_REPO_NAME: "my-ecs-app-repo"
     AWS_REGION: "ap-south-1"
     S3_BUCKET: "my-ecs-app-s3"
 
