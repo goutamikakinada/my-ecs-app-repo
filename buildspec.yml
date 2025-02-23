@@ -2,10 +2,12 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: "my-ecs-app-repo"
-    AWS_REGION: "ap-south-1"
-    AWS_ACCOUNT_ID: "202533504513"
-    S3_BUCKET: "my-ecs-app-s3"
+    AWS_REGION: ap-south-1
+    BUCKET_NAME: my-ecs-app-s3
+    KMS_KEY_ARN: arn:aws:kms:ap-south-1:202533504513:alias/aws/s3
+    IMAGE_REPO_NAME: my-ecs-app-repo
+    AWS_ACCOUNT_ID: 202533504513
+    IMAGE_URI: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
 
 phases:
   pre_build:
@@ -15,28 +17,28 @@ phases:
 
   build:
     commands:
-      - echo "Building the Docker image..."
+      - echo Building the Docker image...
       - docker build -t $IMAGE_REPO_NAME:latest .
       - docker tag $IMAGE_REPO_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
 
   post_build:
     commands:
-      - echo "Pushing the Docker image to ECR..."
+      - echo Pushing the Docker image to ECR...
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
-      - echo "Creating imagedefinitions.json..."
+      - echo Creating imagedefinitions.json...
       - printf '[{"name":"my-ecs-app-container","imageUri":"%s"}]' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest > imagedefinitions.json
-      - echo "Displaying content of imagedefinitions.json:"
-      - cat imagedefinitions.json  # Print imagedefinitions.json content for debugging
-      - echo "Displaying content of appspec.yaml:"
-      - cat appspec.yaml  # Print appspec.yaml content for debugging
-      - echo "Uploading imagedefinitions.json to S3..."
-      - aws s3 cp imagedefinitions.json s3://$S3_BUCKET/imagedefinitions.json
-      - echo "Uploading appspec.yaml to S3..."
-      - aws s3 cp appspec.yaml s3://$S3_BUCKET/appspec.yaml
+      - echo Displaying content of imagedefinitions.json:
+      - cat imagedefinitions.json
+
+      # Retrieve the encrypted artifacts from S3
+      - echo Retrieving appspec.yaml and imagedefinitions.json from S3...
+      - aws s3 cp s3://$BUCKET_NAME/imagedefinitions.json imagedefinitions.json --region $AWS_REGION --sse aws:kms --sse-kms-key-id $KMS_KEY_ARN
+      - aws s3 cp s3://$BUCKET_NAME/appspec.yaml appspec.yaml --region $AWS_REGION --sse aws:kms --sse-kms-key-id $KMS_KEY_ARN
+      - echo Displaying content of appspec.yaml:
+      - cat appspec.yaml
 
 artifacts:
   files:
-    - appspec.yaml
     - imagedefinitions.json
-  discard-paths: yes
+    - appspec.yaml
 
