@@ -1,0 +1,9 @@
+version: 0.0
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: "my-ecs-app-td"
+        LoadBalancerInfo:
+          ContainerName: "my-ecs-app-container"
+          ContainerPort: 3000
