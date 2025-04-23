@@ -2,9 +2,9 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: "my-ecs-app-repo"
-    AWS_REGION: "ap-south-1"
-    AWS_ACCOUNT_ID: "202533504513"
+    IMAGE_REPO_NAME: "my-ecs-app"
+    AWS_REGION: "us-east-1"
+    AWS_ACCOUNT_ID: "714223118758"
     S3_BUCKET: "my-ecs-app-s3bucket"
 
 phases:
@@ -12,18 +12,18 @@ phases:
     commands:
       - echo "Installing dependencies..."
       - echo "No runtime version specified"
-      
+
   pre_build:
     commands:
       - echo "Logging in to Amazon ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-      
+
   build:
     commands:
       - echo "Building the Docker image..."
       - docker build -t $IMAGE_REPO_NAME:latest .
       - docker tag $IMAGE_REPO_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
-      
+
   post_build:
     commands:
       - echo "Pushing the Docker image to ECR..."
@@ -33,30 +33,6 @@ phases:
       - echo "Displaying content of imagedefinitions.json:"
       - cat imagedefinitions.json
 
-      # Uploading imagedefinitions.json to S3
-      - echo "Uploading imagedefinitions.json to S3..."
-      - aws s3 cp imagedefinitions.json s3://$S3_BUCKET/imagedefinitions.json
-
-      # Uploading appspec.yaml to S3 (blue/green deployment)
-      - echo "Uploading appspec.yaml to S3..."
-      - aws s3 cp appspec.yaml s3://$S3_BUCKET/appspec.yaml
-
-      # Download imagedefinitions.json and appspec.yaml from S3 (to simulate post-deployment step)
-      - echo "Downloading imagedefinitions.json from S3..."
-      - aws s3 cp s3://$S3_BUCKET/imagedefinitions.json imagedefinitions.json
-
-      - echo "Downloading appspec.yaml from S3..."
-      - aws s3 cp s3://$S3_BUCKET/appspec.yaml appspec.yaml
-
-      # Display the content of imagedefinitions.json and appspec.yaml
-      - echo "Displaying content of imagedefinitions.json:"
-      - cat imagedefinitions.json
-
-      - echo "Displaying content of appspec.yaml:"
-      - cat appspec.yaml
-
 artifacts:
   files:
     - imagedefinitions.json
-    - appspec.yaml
-
