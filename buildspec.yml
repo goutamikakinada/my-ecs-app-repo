@@ -2,10 +2,10 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: "my-ecs-app-repo"  # Replace with your ECR repository name
-    AWS_REGION: "ap-south-1"            # Replace with your AWS region
-    AWS_ACCOUNT_ID: "202533504513"      # Replace with your AWS Account ID
-    S3_BUCKET: "my-ecs-app-s3"          # Updated to your S3 bucket name
+    IMAGE_REPO_NAME: "my-ecs-app-repo"
+    AWS_REGION: "ap-south-1"
+    AWS_ACCOUNT_ID: "202533504513"
+    S3_BUCKET: "my-ecs-app-s3bucket"
 
 phases:
   install:
